@@ -164,16 +164,14 @@ stroke="#ff2d2d" stroke-width="4"/>
 
 <script>
 
-/* MAPA LEVE */
+/* MAPA LEVE SEM POS*/
 let map = L.map('map',{zoomControl:false}).setView([0,0],18);
-
-
+    
 const carIcon = L.icon({
   iconUrl: 'car.png',
   iconSize: [48,48],
   iconAnchor: [24,24]
 });
-    
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
     updateWhenIdle:true,
