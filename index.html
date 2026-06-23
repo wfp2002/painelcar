@@ -2,30 +2,31 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Car Dashboard ZLINK OPT</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard</title>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/leaflet-rotate@0.2.8/dist/leaflet-rotate-src.js"></script>
 
 <style>
-html, body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background: black;
+
+html, body{
+    margin:0;
+    padding:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    font-family:Arial;
+    background:black;
 }
 
-    /* MAPA MAIS LEVE */
-#map {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+/* MAPA */
+#map{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    z-index:0;
 }
 
 /* OVERLAY */
@@ -36,47 +37,46 @@ html, body {
     pointer-events:none;
 }
 
-/* SPEEDOMETER */
+/* SPEEDO */
 .speedo{
     position:absolute;
-    left:18%;
-    top:52%;
+    left:15%;
+    top:50%;
     transform:translate(-50%,-50%);
-    width:320px;
-    height:320px;
+    width:420px;
+    height:420px;
 }
 
-svg{width:100%;height:100%;}
+svg{
+    width:100%;
+    height:100%;
+}
 
 /* BASE */
 .base{
-    fill:rgba(20,20,20,0.55);
+    fill:rgba(25,25,25,0.6);
     stroke:#1f2a37;
-    stroke-width:18;
+    stroke-width:20;
 }
 
-/* ARC MAIS LEVE */
+/* ARC REAL */
 .arc{
     fill:none;
     stroke:#00ff99;
-    stroke-width:14;
+    stroke-width:18;
     stroke-linecap:round;
-    transform:rotate(-135deg);
-    transform-origin:50% 50%;
-
-    stroke-dasharray: 754;
-    stroke-dashoffset: 754;
+    filter: drop-shadow(0 0 8px rgba(0,255,150,0.8));
 }
 
-/* AGULHA SUAVE */
+/* NEEDLE */
 .needle{
     stroke:#ff2d2d;
     stroke-width:4;
     stroke-linecap:round;
-    transition:0.35s cubic-bezier(.2,.8,.2,1);
+    transition:0.15s linear;
 }
 
-/* SPEED TEXT */
+/* TEXT */
 .center{
     position:absolute;
     top:50%;
@@ -86,40 +86,38 @@ svg{width:100%;height:100%;}
 }
 
 .speed{
-    font-size:96px;
-    font-weight:300;
-    color: white;
-    font-weight: bold;
+    font-size:90px;
+    color:white;
 }
 
-.unit{color:#aaa;}
+.unit{
+    color:#aaa;
+}
 
 /* INFO */
 .info{
     position:absolute;
-    bottom:0px;
+    bottom:20px;
     width:100%;
     display:flex;
     justify-content:center;
     gap:60px;
-    font-size:16px;
-    color:#ddd;
-    padding: 10px;
-    background-color: black;
+    color:#9ecbff;
+    font-size:14px;
+    
 }
 
-/* TOP */
 .top{
     position:absolute;
-    top:0px;
+    top:15px;
     width:100%;
     display:flex;
     justify-content:space-around;
-    font-size:16px;
     color:#ddd;
-    padding: 10px;
-    background-color: black;
+    font-size:14px;
+    background-color: #1f2a37;
 }
+
 </style>
 </head>
 
@@ -129,182 +127,186 @@ svg{width:100%;height:100%;}
 
 <div class="overlay">
 
-<div class="top">
-    <div id="time">--:--</div>
-    <div id="alt">ALT 0 m</div>
-    <div id="avg">AVG 0 km/h</div>
-</div>
+    <div class="top">
+        <div id="time">--:--</div>
+        <div id="alt">ALT 0 m</div>
+        <div id="avg">AVG 0 km/h</div>
+    </div>
 
-<div class="speedo">
+    <div class="speedo">
 
-<svg viewBox="0 0 300 300">
+        <svg viewBox="0 0 300 300">
 
-<circle class="base" cx="150" cy="150" r="120"/>
-<circle id="arc" class="arc" cx="150" cy="150" r="120"/>
+            <!-- BASE -->
+            <circle class="base" cx="150" cy="150" r="120"/>
 
-<g id="needleGroup">
-<line x1="150" y1="150" x2="150" y2="40"
-stroke="#ff2d2d" stroke-width="4"/>
-</g>
+            <!-- ARC REAL -->
+            <path id="arc" class="arc"></path>
 
-<circle cx="150" cy="150" r="6" fill="#ff2d2d"/>
+            <!-- NEEDLE -->
+            <g id="needleGroup">
+                <line x1="150" y1="150" x2="150" y2="40"
+                      class="needle"/>
+            </g>
 
-</svg>
+            <circle cx="150" cy="150" r="6" fill="#ff2d2d"/>
 
-<div class="center">
-<div class="speed" id="speed">0</div>
-<div class="unit">km/h</div>
-</div>
+        </svg>
 
-</div>
+        <div class="center">
+            <div class="speed" id="speed">0</div>
+            <div class="unit">km/h</div>
+        </div>
 
-<div class="info">
-<div id="dist">0.00 km</div>
-<div id="coords">0,0</div>
-</div>
+    </div>
 
 </div>
 
 <script>
 
-/* MAPA LEVE SEM POS*/
-let map = L.map('map',{zoomControl:false}).setView([0,0],18);
-    
-const carIcon = L.icon({
-  iconUrl: 'car.png',
-  iconSize: [48,48],
-  iconAnchor: [24,24]
-});
+let map = L.map('map').setView([-23.5505,-46.6333], 18);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-    updateWhenIdle:true,
-    keepBuffer:2
+    attribution:''
 }).addTo(map);
 
-let marker=null;
-
-let path=[];
-let line=L.polyline([], {color:'#00ff88', weight:3}).addTo(map);
-
-/* CONFIG */
-const MAX=220;
-const CIRC=754;
+setTimeout(()=> map.invalidateSize(), 300);
 
 /* VARS */
-let last=null;
-let dist=0;
-let speeds=[];
+const MAX = 220;
+let smooth = 0;
 
-/* CLOCK */
-setInterval(()=>{
-document.getElementById("time")
-.innerText=new Date().toLocaleTimeString();
-},1000);
-
-/* DIST */
-function getDist(a,b){
-const R=6371e3;
-const toRad=x=>x*Math.PI/180;
-
-const dLat=toRad(b.lat-a.lat);
-const dLon=toRad(b.lon-a.lon);
-
-const s=Math.sin(dLat/2)**2+
-Math.sin(dLon/2)**2*
-Math.cos(toRad(a.lat))*Math.cos(toRad(b.lat));
-
-return R*(2*Math.atan2(Math.sqrt(s),Math.sqrt(1-s)));
-}
-
-/* SPEED OPT (ANTI-LAG ZLINK) */
-function setSpeed(v){
-
-v = Math.max(0, Math.min(MAX, v));
-
-document.getElementById("speed").innerText=Math.round(v);
+let marker = null;
+let lastLat = null;
+let lastLon = null;
 
 /* ARC */
-let pct=v/MAX;
-document.getElementById("arc").style.strokeDashoffset=
-CIRC*(1-pct);
+function describeArc(cx, cy, r, startAngle, endAngle){
 
-/* NEEDLE */
-let angle=-135 + pct*270;
+    const toRad = a => (a-90) * Math.PI / 180;
 
-document.getElementById("needleGroup")
-.setAttribute("transform",`rotate(${angle} 150 150)`);
+    let start = {
+        x: cx + r * Math.cos(toRad(startAngle)),
+        y: cy + r * Math.sin(toRad(startAngle))
+    };
+
+    let end = {
+        x: cx + r * Math.cos(toRad(endAngle)),
+        y: cy + r * Math.sin(toRad(endAngle))
+    };
+
+    let largeArc = endAngle - startAngle <= 180 ? "0" : "1";
+
+    return `M ${start.x} ${start.y}
+            A ${r} ${r} 0 ${largeArc} 1 ${end.x} ${end.y}`;
 }
 
-/* GPS OTIMIZADO (REDUZ FREQUÊNCIA VISUAL) */
-let lastUpdate=0;
+/* SPEED RENDER */
+function setSpeed(v){
 
-navigator.geolocation.watchPosition(pos=>{
+    smooth += (v - smooth) * 0.15;
 
-let now=Date.now();
-if(now-lastUpdate<500) return; // reduz lag ZLink
-lastUpdate=now;
+    document.getElementById("speed")
+    .innerText = Math.round(smooth);
 
-let lat=pos.coords.latitude;
-let lon=pos.coords.longitude;
+    let pct = Math.max(0, Math.min(1, smooth / MAX));
 
-let heading = pos.coords.heading || 0;
+    const start = -135;
+    const end = 135;
 
-if(map.setBearing){
-    map.setBearing(heading);
+    let angle = start + pct * (end - start);
+
+    /* NEEDLE */
+    document.getElementById("needleGroup")
+    .setAttribute("transform",
+        `rotate(${angle} 150 150)`
+    );
+
+    /* ARC */
+    document.getElementById("arc")
+    .setAttribute("d",
+        describeArc(150,150,120,start,angle)
+    );
 }
 
-let speed=(pos.coords.speed||0)*3.6;
-let alt=pos.coords.altitude||0;
+/* DISTANCIA */
+function getDistance(lat1, lon1, lat2, lon2){
 
-/* UI */
-document.getElementById("alt").innerText="ALT "+Math.round(alt)+" m";
-document.getElementById("coords").innerText=
-lat.toFixed(5)+" | "+lon.toFixed(5);
+    const R = 6371e3;
+    const toRad = x => x * Math.PI / 180;
 
-/* MAPA LEVE UPDATE */
-if(!marker){
-marker = L.marker([lat,lon],{
-        icon: carIcon
-    }).addTo(map);
-}else{
-marker.setLatLng([lat,lon]);
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+
+    const a =
+        Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+        Math.sin(dLon/2) * Math.sin(dLon/2);
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+    return R * c;
 }
 
-map.setView([lat,lon]);
+/* GPS REAL */
+if ("geolocation" in navigator) {
 
-/* PATH REDUZIDO */
-if(path.length>200) path.shift();
-path.push([lat,lon]);
+    navigator.geolocation.watchPosition(pos => {
 
-line.setLatLngs(path);
+        let lat = pos.coords.latitude;
+        let lon = pos.coords.longitude;
 
-/* DIST */
-if(last){
-dist+=getDist(last,{lat,lon});
+        /* velocidade real (m/s → km/h) */
+        let speed = (pos.coords.speed || 0) * 3.6;
+
+        /* MAPA */
+        if (!marker) {
+            marker = L.marker([lat, lon]).addTo(map);
+        } else {
+            marker.setLatLng([lat, lon]);
+        }
+
+        map.setView([lat, lon]);
+
+        /* SPEED */
+        setSpeed(speed);
+
+        /* UI */
+        document.getElementById("time").innerText =
+            new Date().toLocaleTimeString();
+
+        document.getElementById("alt").innerText =
+            "ALT " + Math.round(pos.coords.altitude || 0) + " m";
+
+        document.getElementById("avg").innerText =
+            "GPS ativo";
+
+        /* fallback debug */
+        console.log("Speed:", speed);
+
+    },
+
+    err => {
+        alert("GPS não disponível. Usando modo demo.");
+
+        /* fallback demo */
+        setInterval(()=>{
+            let fake = Math.abs(Math.sin(Date.now()/2000))*220;
+            setSpeed(fake);
+        },50);
+
+    },
+
+    {
+        enableHighAccuracy:true,
+        maximumAge:1000
+    });
+
+} else {
+    alert("Geolocation não suportado");
 }
-last={lat,lon};
-
-document.getElementById("dist")
-.innerText=(dist/1000).toFixed(2)+" km";
-
-/* AVG */
-speeds.push(speed);
-if(speeds.length>20) speeds.shift();
-
-let avg=speeds.reduce((a,b)=>a+b,0)/speeds.length;
-document.getElementById("avg")
-.innerText="AVG "+avg.toFixed(0)+" km/h";
-
-/* SPEED */
-setSpeed(speed);
-
-},err=>alert("Ative o GPS"),{
-enableHighAccuracy:true,
-maximumAge:1000,
-timeout:5000
-});
-
 </script>
+
 
 </body>
 </html>
