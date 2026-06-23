@@ -166,8 +166,7 @@ stroke="#ff2d2d" stroke-width="4"/>
 
 /* MAPA LEVE */
 let map = L.map('map',{zoomControl:false}).setView([0,0],18);
-let heading = pos.coords.heading || 0;
-map.setBearing(heading);
+
 
 const carIcon = L.icon({
   iconUrl: 'car.png',
@@ -250,6 +249,9 @@ lastUpdate=now;
 
 let lat=pos.coords.latitude;
 let lon=pos.coords.longitude;
+
+let heading = pos.coords.heading || 0;
+map.setBearing(heading);
 
 let speed=(pos.coords.speed||0)*3.6;
 let alt=pos.coords.altitude||0;
