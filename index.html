@@ -166,6 +166,7 @@ svg{
     <div class="info">
     <div id="dist">0.00 km</div>
     <div id="coords">0,0</div>
+    <div id="heading">0°</div>
     </div>
 
 </div>
@@ -330,6 +331,7 @@ if ("geolocation" in navigator) {
             "GPS ativo";
 
         document.getElementById("coords").innerText = lat.toFixed(5)+" | "+lon.toFixed(5);
+        document.getElementById("heading").innerText = heading.toString() + "°";
 
         /* AVG */
         speeds.push(speed);
