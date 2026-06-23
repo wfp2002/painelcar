@@ -63,6 +63,9 @@ svg{width:100%;height:100%;}
     stroke-linecap:round;
     transform:rotate(-135deg);
     transform-origin:50% 50%;
+
+    stroke-dasharray: 754;
+    stroke-dashoffset: 754;
 }
 
 /* AGULHA SUAVE */
@@ -180,10 +183,6 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
 
 let marker=null;
 
-marker = L.marker([lat,lon],{
-  icon: carIcon
-}).addTo(map);
-    
 let path=[];
 let line=L.polyline([], {color:'#00ff88', weight:3}).addTo(map);
 
@@ -249,7 +248,10 @@ let lat=pos.coords.latitude;
 let lon=pos.coords.longitude;
 
 let heading = pos.coords.heading || 0;
-map.setBearing(heading);
+
+if(map.setBearing){
+    map.setBearing(heading);
+}
 
 let speed=(pos.coords.speed||0)*3.6;
 let alt=pos.coords.altitude||0;
@@ -261,7 +263,9 @@ lat.toFixed(5)+" | "+lon.toFixed(5);
 
 /* MAPA LEVE UPDATE */
 if(!marker){
-marker=L.marker([lat,lon]).addTo(map);
+marker = L.marker([lat,lon],{
+        icon: carIcon
+    }).addTo(map);
 }else{
 marker.setLatLng([lat,lon]);
 }
