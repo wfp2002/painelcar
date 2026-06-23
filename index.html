@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Dashboard Zlink</title>
+<title>Dashboard Z</title>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -163,6 +163,11 @@ svg{
 
     </div>
 
+    <div class="info">
+    <div id="dist">0.00 km</div>
+    <div id="coords">0,0</div>
+    </div>
+
 </div>
 
 <script>
@@ -189,6 +194,9 @@ let smooth = 0;
 let marker = null;
 let lastLat = null;
 let lastLon = null;
+
+let speeds=[];
+
 
 /* ARC */
 function describeArc(cx, cy, r, startAngle, endAngle){
@@ -320,6 +328,17 @@ if ("geolocation" in navigator) {
 
         document.getElementById("avg").innerText =
             "GPS ativo";
+
+        document.getElementById("coords").innerText = lat.toFixed(5)+" | "+lon.toFixed(5);
+
+        /* AVG */
+        speeds.push(speed);
+        if(speeds.length>20) speeds.shift();
+
+        let avg=speeds.reduce((a,b)=>a+b,0)/speeds.length;
+        document.getElementById("avg")
+        .innerText="AVG "+avg.toFixed(0)+" km/h";
+
 
         /* fallback debug */
         console.log("Speed:", speed);
