@@ -7,6 +7,7 @@
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet-rotate@0.2.8/dist/leaflet-rotate-src.js"></script>
 
 <style>
 html, body {
@@ -162,7 +163,16 @@ stroke="#ff2d2d" stroke-width="4"/>
 <script>
 
 /* MAPA LEVE */
-let map = L.map('map',{zoomControl:false}).setView([0,0],16);
+let map = L.map('map',{zoomControl:false}).setView([0,0],18);
+let heading = pos.coords.heading || 0;
+map.setBearing(heading);
+
+const carIcon = L.icon({
+  iconUrl: 'car.png',
+  iconSize: [48,48],
+  iconAnchor: [24,24]
+});
+    
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
     updateWhenIdle:true,
@@ -170,6 +180,11 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
 }).addTo(map);
 
 let marker=null;
+
+marker = L.marker([lat,lon],{
+  icon: carIcon
+}).addTo(map);
+    
 let path=[];
 let line=L.polyline([], {color:'#00ff88', weight:3}).addTo(map);
 
